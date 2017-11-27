@@ -24,6 +24,10 @@
 
         </activity>
 
+        <activity android:name=".FullscreenActivity"
+                  android:label="Photostream" >
+
+        </activity>
         <meta-data
             android:name="PHOTOSTREAM_URL"
             android:value="http://141.100.70.65:8082" >
