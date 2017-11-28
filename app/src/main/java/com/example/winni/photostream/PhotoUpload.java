@@ -3,11 +3,9 @@ package com.example.winni.photostream;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.design.widget.TextInputEditText;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -71,20 +69,8 @@ public class PhotoUpload extends PhotoStreamActivity implements OnPhotoUploadLis
             }
         });
 
-        // Bitmap laden
-        loadBitmapAsync(assetUri, new OnBitmapLoadedListener() {
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap) {
-                PhotoUpload.this.bitmap = bitmap;
-                // OnClickListener setzen für Button etc.
-                initializeViews();
-            }
-
-            @Override
-            public void onLoadBitmapError(IOException e) {
-                Log.d(PhotoUpload.class.getSimpleName(), "Fehler beim Dekodieren des Bilds architecture.png", e);
-            }
-        });
+        confirmUpload.setEnabled(false);
+        initializeViews();
 
     };
 
@@ -129,8 +115,8 @@ public class PhotoUpload extends PhotoStreamActivity implements OnPhotoUploadLis
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            chosenPic.setImageBitmap(imageBitmap);
+            bitmap = (Bitmap) extras.get("data");
+            chosenPic.setImageBitmap(bitmap);
             confirmUpload.setEnabled(true);
         }
         if (requestCode == REQUEST_IMAGE_GALLERY && resultCode == RESULT_OK){
@@ -171,6 +157,7 @@ public class PhotoUpload extends PhotoStreamActivity implements OnPhotoUploadLis
     public void onPhotoUploaded(Photo photo) {
         Toast.makeText(this, "Photo Uploaded", Toast.LENGTH_LONG).show();
         confirmUpload.setEnabled(true);
+        finish();
     }
 
     @Override

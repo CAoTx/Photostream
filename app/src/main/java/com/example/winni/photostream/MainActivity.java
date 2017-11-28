@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +17,6 @@ import hochschuledarmstadt.photostream_tools.IPhotoStreamClient;
 import hochschuledarmstadt.photostream_tools.PhotoStreamActivity;
 import hochschuledarmstadt.photostream_tools.RequestType;
 import hochschuledarmstadt.photostream_tools.adapter.BasePhotoAdapter;
-import hochschuledarmstadt.photostream_tools.callback.OnCommentCountChangedListener;
 import hochschuledarmstadt.photostream_tools.callback.OnNewPhotoReceivedListener;
 import hochschuledarmstadt.photostream_tools.callback.OnPhotosReceivedListener;
 import hochschuledarmstadt.photostream_tools.callback.OnRequestListener;
@@ -34,7 +31,7 @@ public class MainActivity extends PhotoStreamActivity implements OnRequestListen
     private PhotoAdapter adapter;
     private Button loadMoreButton;
     private FloatingActionButton uploadButton;
-    private int penis;
+    private IPhotoStreamClient photoStreamClient;
 
     // Key zum Zwischenspeichern der Fotos in onSaveInstance
     private static final String KEY_ADAPTER = "KEY_ADAPTER";
@@ -42,6 +39,7 @@ public class MainActivity extends PhotoStreamActivity implements OnRequestListen
     @Override
     protected void onPhotoStreamServiceConnected(IPhotoStreamClient photoStreamClient, Bundle savedInstanceState) {
 
+        this.photoStreamClient = photoStreamClient;
         photoStreamClient.addOnRequestListener(this, RequestType.LOAD_PHOTOS);
         photoStreamClient.addOnPhotosReceivedListener(this);
         photoStreamClient.addOnNewPhotoReceivedListener(this);
@@ -120,19 +118,30 @@ public class MainActivity extends PhotoStreamActivity implements OnRequestListen
 
 
         adapter = new PhotoAdapter();
-        /* Nicht implementiert, da keine FullscreenActivity Class
+        // Nicht implementiert, da keine FullscreenActivity Class
         // OnItemClickListener für die ImageView mit der id "imageView" setzen.
         adapter.setOnItemClickListener(R.id.imageView, new BasePhotoAdapter.OnItemClickListener<PhotoAdapter.PhotoViewHolder>() {
             @Override
             public void onItemClicked(PhotoAdapter.PhotoViewHolder viewHolder, View v, Photo photo) {
                 // Wenn auf die ImageView ein Klick ausgelöst wurde, dann die FullscreenActivity starten,
                 // um das Photo im Vollbild anzuzeigen
-                Intent intent = new Intent(MainActivity.this, FullscreenActivity.class);
-                intent.putExtra(FullscreenActivity.KEY_PHOTO, photo);
-                startActivity(intent);
+
+
+                /* nur wenn dein eigenes Foto */
+                if(photo.isDeleteable())
+                {
+                    Intent intent = new Intent(MainActivity.this, FullscreenActivity.class);
+                    intent.putExtra(FullscreenActivity.KEY_PHOTO, photo);
+                    startActivity(intent);
+                    Log.d("baahm", "kabumm");
+                }
+                else
+                {
+                    //nicht mein Foto
+                }
             }
         });
-        */
+
 
         // Als Letztes der RecyclerView den Adapter als Datenquelle zuweisen
         recyclerView.setAdapter(adapter);
@@ -166,6 +175,16 @@ public class MainActivity extends PhotoStreamActivity implements OnRequestListen
         return super.onOptionsItemSelected(item);
     }
 
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if(null != photoStreamClient)
+        {
+            photoStreamClient.loadPhotos();
+        }
+    }
 
     @Override
     public void onRequestStarted() {
